@@ -1,8 +1,10 @@
 name: 'publish'
+
 on:
   push:
     branches:
       - release
+
 jobs:
   publish-tauri:
     permissions:
@@ -19,53 +21,36 @@ jobs:
             args: ''
           - platform: 'windows-latest'
             args: ''
+
     runs-on: ${{ matrix.platform }}
     steps:
       - uses: actions/checkout@v4
+
       - name: setup node
         uses: actions/setup-node@v4
         with:
           node-version: lts/*
+
       - name: install Rust stable
         uses: dtolnay/rust-toolchain@stable
         with:
           targets: ${{ matrix.platform == 'macos-latest' && 'aarch64-apple-darwin,x86_64-apple-darwin' || '' }}
+
       - name: install dependencies (ubuntu only)
-        if: matrix.platform == 'ubuntu-22 simplified'
+        if: matrix.platform == 'ubuntu-22.04'
         run: |
           sudo apt-get update
-          sudo apt-get install -y libwebkit2gtk-4.0-dev libwebkit2gtk-4.1-dev libappindicator3-dev librsvg2-dev patchelf
+          sudo apt-get install -y libwebkit2gtk-4.1-dev libappindicator3-dev librsvg2-dev patchelf
+
       - name: install frontend dependencies
         run: npm install
-      - name: Debug environment variables
-        run: |
-          echo "GITHUB_TOKEN is set: ${{ env.GITHUB_TOKEN != '' }}"
-          echo "TAURI_SIGNING_PRIVATE_KEY is set: ${{ env.TAURI_SIGNING_PRIVATE_KEY != '' }}"
-
-      # Se elimina la parte de "Change directory" ya que no es necesario
-
-      # Ahora extraemos la versión de Tauri directamente con la configuración de la app
-      - name: Get version from Tauri
-        id: get_version
-        run: |
-          VERSION=$(cat src-tauri/tauri.conf.json | jq -r '.package.version')
-          echo "VERSION=$VERSION" >> $GITHUB_ENV
-
-      # Crear el tag basado en la versión extraída
-      - name: Create Tag
-        run: |
-          git tag app-v${{ env.VERSION }}
-          git push origin app-v${{ env.VERSION }}
 
       - uses: tauri-apps/tauri-action@v0
         env:
-          GITHUB_TOKEN: ${{ secrets.TARGET_REPOSITORY_TOKEN }}
-          TAURI_SIGNING_PRIVATE_KEY: ${{ secrets.TAURI_SIGNING_PRIVATE_KEY }}
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
-          owner: 'dominara-team'
-          repo: 'dominara'
-          tagName: 'app-v${{ env.VERSION }}'  # Usa la versión extraída para el tag
-          releaseName: 'Dominara v${{ env.VERSION }}'  # Usa la versión extraída para el release
+          tagName: app-v__VERSION__ # the action automatically replaces \_\_VERSION\_\_ with the app version.
+          releaseName: 'Dominara v__VERSION__'
           releaseBody: 'See the assets to download this version and install.'
           releaseDraft: true
           prerelease: false
