@@ -40,6 +40,7 @@ jobs:
       - uses: tauri-apps/tauri-action@v0
         env:
           TAURI_SIGNING_PRIVATE_KEY: ${{ secrets.TAURI_SIGNING_PRIVATE_KEY }}
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
           tagName: "Dominara v__VERSION__"
           releaseName: "Dominara v__VERSION__"
@@ -47,4 +48,3 @@ jobs:
           releaseDraft: false
           prerelease: false
           args: ${{ matrix.args }}
-          github_token: ${{ secrets.GITHUB_TOKEN }}
