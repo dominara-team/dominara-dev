@@ -1,14 +1,50 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import reactLogo from "./assets/react.svg";
 import { invoke } from "@tauri-apps/api/core";
+import { listen } from "@tauri-apps/api/event";
 import "./App.css";
 
 function App() {
   const [greetMsg, setGreetMsg] = useState("");
   const [name, setName] = useState("");
+  const [updateStatus, setUpdateStatus] = useState("");
+  const [downloadProgress, setDownloadProgress] = useState(0);
+  const [isDownloading, setIsDownloading] = useState(false);
+
+  useEffect(() => {
+    const unlisten = listen("update-progress", (event) => {
+      const data = event.payload;
+      switch (data.event) {
+        case "started":
+          setIsDownloading(true);
+          setDownloadProgress(0);
+          break;
+        case "progress":
+          setDownloadProgress((prev) => prev + data.data.chunkLength);
+          break;
+        case "finished":
+          setIsDownloading(false);
+          setUpdateStatus("Update downloaded successfully!");
+          break;
+      }
+    });
+
+    return () => {
+      unlisten.then((fn) => fn());
+    };
+  }, []);
+
+  async function checkForUpdates() {
+    try {
+      setUpdateStatus("Checking for updates...");
+      const result = await invoke("check_update");
+      setUpdateStatus(result);
+    } catch (error) {
+      setUpdateStatus(`Error: ${error}`);
+    }
+  }
 
   async function greet() {
-    // Learn more about Tauri commands at https://tauri.app/develop/calling-rust/
     setGreetMsg(await invoke("greet", { name }));
   }
 
@@ -29,6 +65,23 @@ function App() {
       </div>
       <p>Click on the Tauri, Vite, and React logos to learn more.</p>
 
+      <div className="row">
+        <button onClick={checkForUpdates}>Check for Updates</button>
+      </div>
+      {updateStatus && (
+        <div className="update-status">
+          <p>{updateStatus}</p>
+        </div>
+      )}
+      {isDownloading && (
+        <div className="download-progress">
+          <div className="progress-bar">
+            <div className="progress-fill" style={{ width: `${(downloadProgress / 1000000) * 100}%` }} />
+          </div>
+          <p>Downloaded: {Math.round(downloadProgress / 1024)} KB</p>
+        </div>
+      )}
+
       <form
         className="row"
         onSubmit={(e) => {
@@ -36,11 +89,7 @@ function App() {
           greet();
         }}
       >
-        <input
-          id="greet-input"
-          onChange={(e) => setName(e.currentTarget.value)}
-          placeholder="Enter a name..."
-        />
+        <input id="greet-input" onChange={(e) => setName(e.currentTarget.value)} placeholder="Enter a name..." />
         <button type="submit">Greet</button>
       </form>
       <p>{greetMsg}</p>
