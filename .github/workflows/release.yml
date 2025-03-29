@@ -26,11 +26,8 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.RELEASES_TOKEN }}
         run: |
-          # Create tag
           git tag "v${{ inputs.version }}"
           git push origin "v${{ inputs.version }}"
-
-          # Create release
           gh release create "v${{ inputs.version }}" \
             --title "Dominara v${{ inputs.app_version }}" \
             --notes "See the assets to download this version and install." \
