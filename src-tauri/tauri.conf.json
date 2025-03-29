@@ -35,7 +35,7 @@
   },
   "plugins": {
     "updater": {
-      "pubkey": "dW50cnVzdGVkIGNvbW1lbnQ6IG1pbmlzaWduIHB1YmxpYyBrZXk6IDM0RkJEQzlCMzJEODFGOTUKUldTVkg5Z3ltOXo3TkxkUi8rVG1keDYxb09JZVFXK0I4a0FoK3R0NUJRVUtqNC9qY3lJNHVwY3UK",
+      "pubkey": "dW50cnVzdGVkIGNvbW1lbnQ6IG1pbmlzaWduIHB1YmxpYyBrZXk6IDY3NTA5OTI3NzdBNTIwMTQKUldRVUlLVjNKNWxRWnovOHViZHVRRmVkVDI2emNLZUM5ZW5UV080SzJPTzVCdHh3VkRPN0NDaVgK",
       "endpoints": [
         "https://update-check-6ebr.onrender.com/latest"
       ],
