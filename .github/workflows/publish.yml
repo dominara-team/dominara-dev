@@ -49,3 +49,5 @@ jobs:
           prerelease: false
           args: ${{ matrix.args }}
           includeUpdaterJson: true
+          owner: dominara-team
+          repo: dominara
