@@ -41,6 +41,10 @@ jobs:
         run: |
           echo "GITHUB_TOKEN is set: ${{ env.GITHUB_TOKEN != '' }}"
           echo "TAURI_SIGNING_PRIVATE_KEY is set: ${{ env.TAURI_SIGNING_PRIVATE_KEY != '' }}"
+      - name: Create Tag
+        run: |
+          git tag app-v${{ github.sha }}  # Crea un tag con el nombre adecuado
+          git push origin app-v${{ github.sha }}  # Pushea el tag a GitHub
       - uses: tauri-apps/tauri-action@v0
         env:
           GITHUB_TOKEN: ${{ secrets.TARGET_REPOSITORY_TOKEN }}
@@ -49,8 +53,8 @@ jobs:
         with:
           owner: 'dominara-team'
           repo: 'dominara'
-          tagName: 'app-v__VERSION__'
-          releaseName: 'Dominara v__VERSION__'
+          tagName: 'app-v${{ github.sha }}'  # Usa el tag creado anteriormente
+          releaseName: 'Dominara v${{ github.sha }}'
           releaseBody: 'See the assets to download this version and install.'
           releaseDraft: true
           prerelease: false
