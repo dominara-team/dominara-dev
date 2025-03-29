@@ -41,6 +41,9 @@ jobs:
         run: |
           echo "GITHUB_TOKEN is set: ${{ env.GITHUB_TOKEN != '' }}"
           echo "TAURI_SIGNING_PRIVATE_KEY is set: ${{ env.TAURI_SIGNING_PRIVATE_KEY != '' }}"
+      - name: Change directory to src-tauri
+        run: cd src-tauri
+
       - name: Extract Version from Cargo.toml
         id: get_version
         run: |
