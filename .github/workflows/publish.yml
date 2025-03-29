@@ -47,3 +47,4 @@ jobs:
           releaseDraft: false
           prerelease: false
           args: ${{ matrix.args }}
+          github_token: ${{ secrets.GITHUB_TOKEN }}
