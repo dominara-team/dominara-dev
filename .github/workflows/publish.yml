@@ -37,6 +37,10 @@ jobs:
           sudo apt-get install -y libwebkit2gtk-4.0-dev libwebkit2gtk-4.1-dev libappindicator3-dev librsvg2-dev patchelf
       - name: install frontend dependencies
         run: npm install
+      - name: Debug environment variables
+        run: |
+          echo "GITHUB_TOKEN is set: ${{ env.GITHUB_TOKEN != '' }}"
+          echo "TAURI_SIGNING_PRIVATE_KEY is set: ${{ env.TAURI_SIGNING_PRIVATE_KEY != '' }}"
       - uses: tauri-apps/tauri-action@v0
         env:
           GITHUB_TOKEN: ${{ secrets.TARGET_REPOSITORY_TOKEN }}
