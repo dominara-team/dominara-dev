@@ -118,7 +118,6 @@ button {
 .download-progress {
   margin: 1rem 0;
   width: 100%;
-  
   max-width: 300px;
 }
 
@@ -129,21 +128,25 @@ button {
   border-radius: 10px;
   overflow: hidden;
   margin-bottom: 0.5rem;
+  box-shadow: inset 0 1px 2px rgba(0, 0, 0, 0.1);
 }
 
 .progress-fill {
   height: 100%;
-  background-color: #e6fa78;
+  background-color: #24c8db;
   transition: width 0.3s ease;
+  box-shadow: inset 0 1px 2px rgba(0, 0, 0, 0.1);
 }
 
 .update-status {
   margin: 1rem 0;
   padding: 1rem;
   border-radius: 8px;
-  background-color: #79b9f8;
+  background-color: #f8f9fa;
+  border: 1px solid #dee2e6;
 }
 
 .update-status p {
+  margin: 0;
   color: #0f0f0f;
 }

@@ -6,10 +6,18 @@ use tauri_plugin_updater::UpdaterExt;
 pub async fn check_update(app: tauri::AppHandle) -> Result<String, String> {
     let updater = app.updater().map_err(|e| e.to_string())?;
     match updater.check().await {
-        Ok(Some(update)) => Ok(format!(
-            "Update available! Current version: {}, Latest version: {}",
-            update.current_version, update.version
-        )),
+        Ok(Some(update)) => {
+            // Iniciar la descarga e instalación
+            update
+                .download_and_install(|_, _| {}, || {})
+                .await
+                .map_err(|e| e.to_string())?;
+
+            Ok(format!(
+                "Update downloaded and installed! New version: {}",
+                update.version
+            ))
+        }
         Ok(None) => Ok("No updates available.".to_string()),
         Err(e) => Err(format!("Failed to check for updates: {}", e)),
     }

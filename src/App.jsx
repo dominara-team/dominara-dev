@@ -9,6 +9,7 @@ function App() {
   const [name, setName] = useState("");
   const [updateStatus, setUpdateStatus] = useState("");
   const [downloadProgress, setDownloadProgress] = useState(0);
+  const [totalSize, setTotalSize] = useState(0);
   const [isDownloading, setIsDownloading] = useState(false);
 
   useEffect(() => {
@@ -18,13 +19,15 @@ function App() {
         case "started":
           setIsDownloading(true);
           setDownloadProgress(0);
+          setUpdateStatus(`Starting download of version ${data.data.version}...`);
           break;
         case "progress":
-          setDownloadProgress((prev) => prev + data.data.chunkLength);
+          setDownloadProgress(data.data.chunkLength);
+          setTotalSize(data.data.total);
           break;
         case "finished":
           setIsDownloading(false);
-          setUpdateStatus("Update downloaded successfully!");
+          setUpdateStatus("Update downloaded successfully! The app will restart to apply the update.");
           break;
       }
     });
@@ -76,9 +79,16 @@ function App() {
       {isDownloading && (
         <div className="download-progress">
           <div className="progress-bar">
-            <div className="progress-fill" style={{ width: `${(downloadProgress / 1000000) * 100}%` }} />
+            <div
+              className="progress-fill"
+              style={{
+                width: `${(downloadProgress / totalSize) * 100}%`,
+              }}
+            />
           </div>
-          <p>Downloaded: {Math.round(downloadProgress / 1024)} KB</p>
+          <p>
+            Downloaded: {Math.round(downloadProgress / 1024)} KB / {Math.round(totalSize / 1024)} KB
+          </p>
         </div>
       )}
 
