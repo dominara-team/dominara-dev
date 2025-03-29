@@ -48,3 +48,4 @@ jobs:
           releaseDraft: false
           prerelease: false
           args: ${{ matrix.args }}
+          releaseAssetName: "dominara-__VERSION__-{target}.{ext}"
