@@ -60,31 +60,27 @@ jobs:
       - name: Install frontend dependencies
         run: npm install
 
-      - name: Build and bundle with Tauri
-        id: tauri-build
+      - name: Build with Tauri (no release creation)
         uses: tauri-apps/tauri-action@v0
         env:
           TAURI_SIGNING_PRIVATE_KEY: ${{ secrets.TAURI_SIGNING_PRIVATE_KEY }}
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          RELEASES_TOKEN: ${{ secrets.RELEASES_TOKEN }}
         with:
-          tagName: "v${{ github.event.inputs.version || 'auto' }}"
-          releaseName: "Dominara v${{ github.event.inputs.app_version || 'auto' }}"
-          releaseBody: "See the assets to download this version and install."
-          releaseDraft: false
-          prerelease: false
           args: ${{ matrix.args }}
           includeUpdaterJson: true
+          # No creamos release aquí, solo generamos artefactos
 
-      - name: Upload artifacts to release in dominara
+      - name: Upload artifacts to dominara
         env:
           GITHUB_TOKEN: ${{ secrets.RELEASES_TOKEN }}
         run: |
-          VERSION="${{ github.event.inputs.version || 'auto' }}"
-          gh release upload "v$VERSION" \
-            --repo dominara-team/dominara \
-            "src-tauri/target/${{ matrix.platform == 'macos-latest' && matrix.artifact_suffix == 'aarch64' && 'aarch64-apple-darwin/release/bundle/dmg/dominara_' || matrix.platform == 'macos-latest' && matrix.artifact_suffix == 'x86_64' && 'x86_64-apple-darwin/release/bundle/dmg/dominara_' || matrix.platform == 'ubuntu-22.04' && 'release/bundle/deb/dominara_' || matrix.platform == 'windows-latest' && 'release/bundle/msi/dominara_' }}${{ github.event.inputs.app_version || 'auto' }}_${{ matrix.artifact_suffix }}.${{ matrix.platform == 'macos-latest' && 'dmg' || matrix.platform == 'ubuntu-22.04' && 'deb' || matrix.platform == 'windows-latest' && 'msi' }}" \
-            "src-tauri/target/${{ matrix.platform == 'macos-latest' && matrix.artifact_suffix == 'aarch64' && 'aarch64-apple-darwin' || matrix.platform == 'macos-latest' && matrix.artifact_suffix == 'x86_64' && 'x86_64-apple-darwin' || matrix.platform == 'ubuntu-22.04' && 'release' || matrix.platform == 'windows-latest' && 'release' }}/release/bundle/${{ matrix.platform == 'macos-latest' && 'macos/dominara.app.tar.gz' || matrix.platform == 'ubuntu-22.04' && 'appimage/dominara.AppImage' || matrix.platform == 'windows-latest' && 'msi/dominara_' }}${{ github.event.inputs.app_version || 'auto' }}_${{ matrix.artifact_suffix }}.${{ matrix.platform == 'windows-latest' && 'msi' || 'tar.gz' }}"
+          ARTIFACT_PATHS=$(find src-tauri/target -type f \( -name "*.dmg" -o -name "*.app.tar.gz" -o -name "*.sig" -o -name "*.deb" -o -name "*.AppImage" -o -name "*.msi" \))
+          if [ -n "$ARTIFACT_PATHS" ]; then
+            gh release upload "v__VERSION__" $ARTIFACT_PATHS --repo dominara-team/dominara
+          else
+            echo "No artifacts found to upload"
+            exit 1
+          fi
         if: ${{ github.event_name == 'workflow_dispatch' }}
 
   create-release:
@@ -99,14 +95,15 @@ jobs:
           repository: dominara-team/dominara
           token: ${{ secrets.RELEASES_TOKEN }}
 
-      - name: Create Release
+      - name: Create Release in dominara
         env:
           GITHUB_TOKEN: ${{ secrets.RELEASES_TOKEN }}
         run: |
-          git tag "v${{ inputs.version }}"
-          git push origin "v${{ inputs.version }}"
-          gh release create "v${{ inputs.version }}" \
-            --title "Dominara v${{ inputs.app_version }}" \
+          git tag "v__VERSION__"
+          git push origin "v__VERSION__"
+          gh release create "v__VERSION__" \
+            --title "Dominara v__VERSION__" \
             --notes "See the assets to download this version and install." \
             --draft=false \
-            --prerelease=false
+            --prerelease=false \
+            --repo dominara-team/dominara
