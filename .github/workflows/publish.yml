@@ -3,8 +3,13 @@ on:
   push:
     branches:
       - release
+  pull_request:
+    branches:
+      - release
+    types: [closed] # Se ejecuta cuando se mergea un PR a 'release'
+
 jobs:
-  publish-tauri:
+  build:
     permissions:
       contents: write
     strategy:
@@ -12,40 +17,120 @@ jobs:
       matrix:
         include:
           - platform: "macos-latest"
-            args: "--target aarch64-apple-darwin"
+            target: "aarch64-apple-darwin"
+            artifact_pattern: "src-tauri/target/release/bundle/macos/*.app.tar.gz"
+            platform_key: "darwin-aarch64"
           - platform: "macos-latest"
-            args: "--target x86_64-apple-darwin"
+            target: "x86_64-apple-darwin"
+            artifact_pattern: "src-tauri/target/release/bundle/macos/*.app.tar.gz"
+            platform_key: "darwin-x86_64"
           - platform: "ubuntu-22.04"
-            args: ""
+            target: ""
+            artifact_pattern: "src-tauri/target/release/bundle/appimage/*.AppImage"
+            platform_key: "linux-x86_64"
           - platform: "windows-latest"
-            args: ""
+            target: ""
+            artifact_pattern: "src-tauri/target/release/bundle/nsis/*.exe"
+            platform_key: "windows-x86_64"
     runs-on: ${{ matrix.platform }}
     steps:
       - uses: actions/checkout@v4
-      - name: setup node
+      - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
           node-version: lts/*
-      - name: install Rust stable
+      - name: Install Rust stable
         uses: dtolnay/rust-toolchain@stable
         with:
-          targets: ${{ matrix.platform == 'macos-latest' && 'aarch64-apple-darwin,x86_64-apple-darwin' || '' }}
-      - name: install dependencies (ubuntu only)
+          targets: ${{ matrix.target }}
+      - name: Install dependencies (Ubuntu only)
         if: matrix.platform == 'ubuntu-22.04'
         run: |
           sudo apt-get update
           sudo apt-get install -y libwebkit2gtk-4.0-dev libwebkit2gtk-4.1-dev libappindicator3-dev librsvg2-dev patchelf
-      - name: install frontend dependencies
+      - name: Install frontend dependencies
         run: npm install
-      - uses: tauri-apps/tauri-action@v0
+      - name: Build Tauri app
+        uses: tauri-apps/tauri-action@v0
         env:
           TAURI_SIGNING_PRIVATE_KEY: ${{ secrets.TAURI_SIGNING_PRIVATE_KEY }}
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
-          tagName: "v__VERSION__"
-          releaseName: "Dominara v__VERSION__"
-          releaseBody: "See the assets to download this version and install."
-          releaseDraft: false
-          prerelease: false
-          args: ${{ matrix.args }}
+          args: ${{ matrix.target != '' && format('--target {0}', matrix.target) || '' }}
           includeUpdaterJson: true
+      - name: Upload artifacts
+        uses: actions/upload-artifact@v3
+        with:
+          name: tauri-artifacts-${{ matrix.platform }}-${{ matrix.target || 'default' }}
+          path: ${{ matrix.artifact_pattern }}
+
+  release:
+    needs: build
+    runs-on: ubuntu-latest
+    if: github.event_name == 'push' || (github.event_name == 'pull_request' && github.event.pull_request.merged == true)
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+      - name: Get version
+        id: get_version
+        run: echo "VERSION=$(node -p "require('./package.json').version")" >> $GITHUB_ENV
+      - name: Download artifacts
+        uses: actions/download-artifact@v3
+        with:
+          path: artifacts/
+      - name: Prepare artifacts and generate latest.json
+        run: |
+          mkdir -p release-files
+          # Mover artifacts a una carpeta plana y recolectar nombres
+          declare -A binaries
+          for file in $(find artifacts -type f -name "*.app.tar.gz" -o -name "*.AppImage" -o -name "*.exe"); do
+            filename=$(basename "$file")
+            mv "$file" "release-files/$filename"
+            if [[ $file =~ aarch64 ]]; then
+              binaries["darwin-aarch64"]=$filename
+            elif [[ $file =~ x86_64.*\.app\.tar\.gz ]]; then
+              binaries["darwin-x86_64"]=$filename
+            elif [[ $file =~ AppImage ]]; then
+              binaries["linux-x86_64"]=$filename
+            elif [[ $file =~ exe ]]; then
+              binaries["windows-x86_64"]=$filename
+            fi
+          done
+          # Generar latest.json con URLs dinámicas
+          cat <<EOF > latest.json
+          {
+            "version": "${{ env.VERSION }}",
+            "notes": "See the assets to download this version and install.",
+            "pub_date": "$(date -u +"%Y-%m-%dT%H:%M:%SZ")",
+            "platforms": {
+              "darwin-aarch64": {
+                "signature": "$(cat release-files/*.app.tar.gz.sig 2>/dev/null || echo "")",
+                "url": "https://github.com/dominara-team/dominara/releases/download/v${{ env.VERSION }}/${binaries["darwin-aarch64"]}"
+              },
+              "darwin-x86_64": {
+                "signature": "$(cat release-files/*.app.tar.gz.sig 2>/dev/null || echo "")",
+                "url": "https://github.com/dominara-team/dominara/releases/download/v${{ env.VERSION }}/${binaries["darwin-x86_64"]}"
+              },
+              "linux-x86_64": {
+                "signature": "$(cat release-files/*.AppImage.sig 2>/dev/null || echo "")",
+                "url": "https://github.com/dominara-team/dominara/releases/download/v${{ env.VERSION }}/${binaries["linux-x86_64"]}"
+              },
+              "windows-x86_64": {
+                "signature": "$(cat release-files/*.exe.sig 2>/dev/null || echo "")",
+                "url": "https://github.com/dominara-team/dominara/releases/download/v${{ env.VERSION }}/${binaries["windows-x86_64"]}"
+              }
+            }
+          }
+          EOF
+      - name: Create release in public repo
+        uses: softprops/action-gh-release@v1
+        with:
+          tag_name: v${{ env.VERSION }}
+          name: Dominara v${{ env.VERSION }}
+          body: "See the assets to download this version and install."
+          draft: false
+          prerelease: false
+          files: |
+            release-files/*
+            latest.json
+          repository: dominara-team/dominara
+          token: ${{ secrets.RELEASE_REPOSITORY_TOKEN }}
