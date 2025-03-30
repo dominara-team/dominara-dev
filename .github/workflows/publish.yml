@@ -72,6 +72,12 @@ jobs:
         with:
           args: ${{ matrix.target != '' && format('--target {0}', matrix.target) || '' }}
           includeUpdaterJson: true
+      - name: Debug artifacts (macOS only)
+        if: matrix.platform == 'macos-latest'
+        run: |
+          echo "Listing generated artifacts for ${{ matrix.target }}:"
+          ls -lh src-tauri/target/release/bundle/macos/ || echo "No .app.tar.gz found"
+          ls -lh src-tauri/target/release/bundle/dmg/ || echo "No .dmg found"
       - name: Upload artifacts
         uses: actions/upload-artifact@v4
         with:
@@ -119,36 +125,31 @@ jobs:
             esac
           done
 
-          cat <<EOF > latest.json
+          cat <<EOF > release-files/latest.json
           {
             "version": "${{ env.VERSION }}",
             "notes": "See the assets to download this version and install.",
             "pub_date": "$(date -u +"%Y-%m-%dT%H:%M:%SZ")",
             "platforms": {
               "darwin-aarch64": {
-                "signature": "$(find release-files -name '*.app.tar.gz.sig' -exec cat {} \; 2>/dev/null || echo "")",
+                "signature": "$(find release-files -name '*aarch64*.app.tar.gz.sig' -exec cat {} \; 2>/dev/null || echo "")",
                 "url": "https://github.com/dominara-team/dominara/releases/download/v${{ env.VERSION }}/${binaries["darwin-aarch64"]}"
               },
               "darwin-x86_64": {
-                "signature": "$(find release-files -name '*.app.tar.gz.sig' -exec cat {} \; 2>/dev/null || echo "")",
+                "signature": "$(find release-files -name '*x64*.app.tar.gz.sig' -exec cat {} \; 2>/dev/null || echo "")",
                 "url": "https://github.com/dominara-team/dominara/releases/download/v${{ env.VERSION }}/${binaries["darwin-x86_64"]}"
               },
               "linux-x86_64": {
-                "signature": "$(find release-files -name '*.AppImage.sig' -exec cat {} \; 2>/dev/null || echo "")",
+                "signature": "$(find release-files -name '*amd64*.AppImage.sig' -exec cat {} \; 2>/dev/null || echo "")",
                 "url": "https://github.com/dominara-team/dominara/releases/download/v${{ env.VERSION }}/${binaries["linux-x86_64"]}"
               },
               "windows-x86_64": {
-                "signature": "$(find release-files -name '*.exe.sig' -exec cat {} \; 2>/dev/null || echo "")",
+                "signature": "$(find release-files -name '*x64-setup.exe.sig' -exec cat {} \; 2>/dev/null || echo "")",
                 "url": "https://github.com/dominara-team/dominara/releases/download/v${{ env.VERSION }}/${binaries["windows-x86_64"]}"
               }
             }
           }
           EOF
-      - name: Upload latest.json as artifact
-        uses: actions/upload-artifact@v4
-        with:
-          name: latest-json
-          path: latest.json
       - name: Create release in public repo
         uses: softprops/action-gh-release@v1
         with:
@@ -157,24 +158,24 @@ jobs:
           body: "See the assets to download this version and install."
           draft: false
           prerelease: false
-          files: release-files/*
+          files: |
+            release-files/*
           repository: dominara-team/dominara
           token: ${{ secrets.RELEASE_REPOSITORY_TOKEN }}
+      # Opcional: Actualizar latest.json en dominara-dev si lo necesitas
       - name: Update latest.json in main repo
+        if: success()
         uses: actions/checkout@v4
         with:
           repository: dominara-team/dominara-dev
           ref: main
           token: ${{ secrets.GITHUB_TOKEN }}
-      - name: Download latest.json artifact
-        uses: actions/download-artifact@v4
-        with:
-          name: latest-json
-          path: .
+      - name: Copy latest.json to main repo
+        run: cp release-files/latest.json .
       - name: Commit and push latest.json
         run: |
           git config --global user.email "github-actions@github.com"
           git config --global user.name "GitHub Actions"
           git add latest.json
-          git commit -m "chore: update latest.json to v${{ env.VERSION }}"
-          git push origin main
+          git commit -m "chore: update latest.json to v${{ env.VERSION }}" || echo "No changes to commit"
+          git push origin main || echo "No changes to push"
