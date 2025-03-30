@@ -119,7 +119,8 @@ jobs:
           mkdir -p release-files
           declare -A binaries
 
-          find artifacts -type f -exec mv {} release-files/ \;
+          # Move only the specific binary artifacts we want, excluding source code
+          find artifacts -type f \( -name "*.app.tar.gz" -o -name "*.app.tar.gz.sig" -o -name "*.dmg" -o -name "*.AppImage" -o -name "*.AppImage.sig" -o -name "*.deb" -o -name "*.rpm" -o -name "*.exe" -o -name "*.exe.sig" -o -name "*.msi" -o -name "*.msi.sig" \) -exec mv {} release-files/ \;
 
           ls -lh release-files
 
@@ -172,7 +173,18 @@ jobs:
           draft: false
           prerelease: false
           files: |
-            release-files/*
+            release-files/*.app.tar.gz
+            release-files/*.app.tar.gz.sig
+            release-files/*.dmg
+            release-files/*.AppImage
+            release-files/*.AppImage.sig
+            release-files/*.deb
+            release-files/*.rpm
+            release-files/*.exe
+            release-files/*.exe.sig
+            release-files/*.msi
+            release-files/*.msi.sig
+            release-files/latest.json
           repository: dominara-team/dominara
           token: ${{ secrets.RELEASE_REPOSITORY_TOKEN }}
       - name: Preserve latest.json
