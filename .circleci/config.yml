@@ -2,6 +2,7 @@ version: 2.1
 
 orbs:
   node: circleci/node@5.0.2
+  win: circleci/windows@2.4.1 # Añadimos el orb para Windows
 
 jobs:
   build-linux:
@@ -55,8 +56,7 @@ jobs:
             TAURI_PRIVATE_KEY: ${{ secrets.TAURI_PRIVATE_KEY }}
 
   build-windows:
-    executor:
-      name: win/default
+    executor: win/default # Ahora usa el ejecutor del orb 'win'
     steps:
       - checkout
       - run:
@@ -78,7 +78,7 @@ jobs:
             npm install -g @tauri-apps/cli
             echo $env:TAURI_PRIVATE_KEY | Out-File -FilePath private.key
             tauri signer sign -k private.key target/x86_64-pc-windows-msvc/release/bundle/app.exe
-            cat target/x86_64-pc-windows-msvc/release/bundle/app.exe.sig > windows_signature.txt
+            Get-Content target/x86_64-pc-windows-msvc/release/bundle/app.exe.sig > windows_signature.txt
       - store_artifacts:
           path: src-tauri/target/x86_64-pc-windows-msvc/release/bundle
           destination: windows-binaries
