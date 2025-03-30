@@ -1,4 +1,5 @@
 name: "publish"
+
 on:
   push:
     branches:
@@ -86,7 +87,7 @@ jobs:
         uses: actions/checkout@v4
       - name: Get version
         id: get_version
-        run: echo "VERSION=$(node -p "require('./package.json').version")" >> $GITHUB_ENV
+        run: echo "VERSION=$(node -p 'require("./package.json").version')" >> $GITHUB_ENV
       - name: Download artifacts
         uses: actions/download-artifact@v4
         with:
@@ -95,9 +96,13 @@ jobs:
         run: |
           mkdir -p release-files
           declare -A binaries
-          for file in $(find artifacts -type f); do
+
+          find artifacts -type f -exec mv {} release-files/ \;
+
+          ls -lh release-files
+
+          for file in $(find release-files -type f); do
             filename=$(basename "$file")
-            mv "$file" "release-files/$filename"
             case "$filename" in
               *aarch64*.app.tar.gz) binaries["darwin-aarch64"]=$filename ;;
               *x64*.app.tar.gz) binaries["darwin-x86_64"]=$filename ;;
@@ -110,6 +115,7 @@ jobs:
               *x64_en-US.msi) binaries["windows-x86_64-msi"]=$filename ;;
             esac
           done
+
           cat <<EOF > latest.json
           {
             "version": "${{ env.VERSION }}",
@@ -117,19 +123,19 @@ jobs:
             "pub_date": "$(date -u +"%Y-%m-%dT%H:%M:%SZ")",
             "platforms": {
               "darwin-aarch64": {
-                "signature": "$(cat release-files/dominara_aarch64.app.tar.gz.sig 2>/dev/null || echo "")",
+                "signature": "$(find release-files -name '*.app.tar.gz.sig' -exec cat {} \; 2>/dev/null || echo "")",
                 "url": "https://github.com/dominara-team/dominara/releases/download/v${{ env.VERSION }}/${binaries["darwin-aarch64"]}"
               },
               "darwin-x86_64": {
-                "signature": "$(cat release-files/dominara_x64.app.tar.gz.sig 2>/dev/null || echo "")",
+                "signature": "$(find release-files -name '*.app.tar.gz.sig' -exec cat {} \; 2>/dev/null || echo "")",
                 "url": "https://github.com/dominara-team/dominara/releases/download/v${{ env.VERSION }}/${binaries["darwin-x86_64"]}"
               },
               "linux-x86_64": {
-                "signature": "$(cat release-files/dominara_${{ env.VERSION }}_amd64.AppImage.sig 2>/dev/null || echo "")",
+                "signature": "$(find release-files -name '*.AppImage.sig' -exec cat {} \; 2>/dev/null || echo "")",
                 "url": "https://github.com/dominara-team/dominara/releases/download/v${{ env.VERSION }}/${binaries["linux-x86_64"]}"
               },
               "windows-x86_64": {
-                "signature": "$(cat release-files/dominara_${{ env.VERSION }}_x64-setup.exe.sig 2>/dev/null || echo "")",
+                "signature": "$(find release-files -name '*.exe.sig' -exec cat {} \; 2>/dev/null || echo "")",
                 "url": "https://github.com/dominara-team/dominara/releases/download/v${{ env.VERSION }}/${binaries["windows-x86_64"]}"
               }
             }
