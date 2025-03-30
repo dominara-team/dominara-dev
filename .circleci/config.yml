@@ -24,13 +24,22 @@ jobs:
               libgtk-3-dev \
               libayatana-appindicator3-dev \
               librsvg2-dev \
-              libglib2.0-dev  # Añadimos esta dependencia
+              libglib2.0-dev \
+              pkg-config  # Añadimos pkg-config explícitamente
             npm install -g yarn
+      - run:
+          name: Verificar instalación de glib-2.0
+          command: |
+            # Verificamos que glib-2.0.pc esté presente
+            find /usr/lib -name glib-2.0.pc || echo "glib-2.0.pc no encontrado"
+            pkg-config --modversion glib-2.0 || echo "pkg-config no encuentra glib-2.0"
       - run:
           name: Compilar para Linux
           command: |
             cd src-tauri
             yarn install
+            # Configuramos PKG_CONFIG_PATH por si acaso
+            export PKG_CONFIG_PATH=/usr/lib/x86_64-linux-gnu/pkgconfig:$PKG_CONFIG_PATH
             yarn tauri build --target x86_64-unknown-linux-gnu
       - run:
           name: Firmar binarios
