@@ -158,11 +158,13 @@ jobs:
           repository: dominara-team/dominara-dev
           ref: main
           token: ${{ secrets.RELEASE_REPOSITORY_TOKEN }}
+      - name: Copy latest.json to main repo
+        run: |
+          cp ../latest.json latest.json
       - name: Commit and push latest.json
         run: |
-          cp latest.json latest.json.new
           git config --global user.email "github-actions@github.com"
           git config --global user.name "GitHub Actions"
-          git add latest.json.new
+          git add latest.json
           git commit -m "chore: update latest.json to v${{ env.VERSION }}"
           git push origin main
