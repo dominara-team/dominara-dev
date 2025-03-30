@@ -6,7 +6,7 @@ on:
   pull_request:
     branches:
       - release
-    types: [closed] # Se ejecuta cuando se mergea un PR a 'release'
+    types: [closed]
 
 jobs:
   build:
@@ -58,7 +58,7 @@ jobs:
           args: ${{ matrix.target != '' && format('--target {0}', matrix.target) || '' }}
           includeUpdaterJson: true
       - name: Upload artifacts
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           name: tauri-artifacts-${{ matrix.platform }}-${{ matrix.target || 'default' }}
           path: ${{ matrix.artifact_pattern }}
@@ -74,13 +74,12 @@ jobs:
         id: get_version
         run: echo "VERSION=$(node -p "require('./package.json').version")" >> $GITHUB_ENV
       - name: Download artifacts
-        uses: actions/download-artifact@v3
+        uses: actions/download-artifact@v4
         with:
           path: artifacts/
       - name: Prepare artifacts and generate latest.json
         run: |
           mkdir -p release-files
-          # Mover artifacts a una carpeta plana y recolectar nombres
           declare -A binaries
           for file in $(find artifacts -type f -name "*.app.tar.gz" -o -name "*.AppImage" -o -name "*.exe"); do
             filename=$(basename "$file")
@@ -95,7 +94,6 @@ jobs:
               binaries["windows-x86_64"]=$filename
             fi
           done
-          # Generar latest.json con URLs dinámicas
           cat <<EOF > latest.json
           {
             "version": "${{ env.VERSION }}",
@@ -132,5 +130,5 @@ jobs:
           files: |
             release-files/*
             latest.json
-          repository: dominara-team/dominara
+          repository: dominara-team/dominara # Cambiado a dominara-team/dominara
           token: ${{ secrets.RELEASE_REPOSITORY_TOKEN }}
