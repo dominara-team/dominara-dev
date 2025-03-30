@@ -1,0 +1,23 @@
+{
+  "version": "0.1.0",
+  "notes": "See the assets to download this version and install.",
+  "pub_date": "2025-03-30T09:39:28Z",
+  "platforms": {
+    "darwin-aarch64": {
+      "signature": "",
+      "url": "https://github.com/dominara-team/dominara/releases/download/v0.1.0/"
+    },
+    "darwin-x86_64": {
+      "signature": "",
+      "url": "https://github.com/dominara-team/dominara/releases/download/v0.1.0/"
+    },
+    "linux-x86_64": {
+      "signature": "dW50cnVzdGVkIGNvbW1lbnQ6IHNpZ25hdHVyZSBmcm9tIHRhdXJpIHNlY3JldCBrZXkKUlVRVUlLVjNKNWxRWngzbGZ0QTl4SngyMEpJL1lXdmtJL2o3T2k5QkpuTVh6d1RoQkR1STlKbE84STZWVFF0cjZYaVp4ZGlRdnlNQjJCQ2JtZ21NVit3T2hoR1BxdDJRakEwPQp0cnVzdGVkIGNvbW1lbnQ6IHRpbWVzdGFtcDoxNzQzMzI3MzY2CWZpbGU6ZG9taW5hcmFfMC4xLjZfYW1kNjQuQXBwSW1hZ2UKMWxOQ0g1ZkNFOXh5bHNzYUVHdWYwL0h6OTFoMXMrbjMrSy84U1NGeTNQRkpSZTR1VkF0cVYwWnRKR1k3WFEvRDdlOVNzOUl1VDk1TE9xaVdsNlZ2QVE9PQo=",
+      "url": "https://github.com/dominara-team/dominara/releases/download/v0.1.0/dominara_0.1.6_amd64.AppImage"
+    },
+    "windows-x86_64": {
+      "signature": "dW50cnVzdGVkIGNvbW1lbnQ6IHNpZ25hdHVyZSBmcm9tIHRhdXJpIHNlY3JldCBrZXkKUlVRVUlLVjNKNWxRWitMUXp0QXAwdnNwZlVvMk1VOW51dWtyQXUycEYxWm9ZZWZ3N0NCSjJaR3ZMRlBvWUlvRnBBWEhxSTlSdSszaFdNVG54Y0M2blhSbkIrREVkYzZoZGdVPQp0cnVzdGVkIGNvbW1lbnQ6IHRpbWVzdGFtcDoxNzQzMzI3NTUyCWZpbGU6ZG9taW5hcmFfMC4xLjZfeDY0LXNldHVwLmV4ZQpLR0ZJQ3hxeEV5TWJIOXZKOTZ1ck9rb0phV1h4Nm9VWHVxQTNUdVk2MjRDVmhWa085SHFMSUVidHFLcTVuNjZheVQyV0J0THlHOEg4Y1B1Y3Q3UHBEdz09Cg==",
+      "url": "https://github.com/dominara-team/dominara/releases/download/v0.1.0/dominara_0.1.6_x64-setup.exe"
+    }
+  }
+}
