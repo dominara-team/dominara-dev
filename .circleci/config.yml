@@ -1,50 +1,196 @@
-build-linux:
-  docker:
-    - image: cimg/rust:1.76
-  steps:
-    - checkout
-    - node/install:
-        node-version: "20"
-    - run:
-        name: Instalar dependencias de Tauri (Ubuntu 22.04)
-        command: |
-          apt-get update && apt-get install -y \
-            libwebkit2gtk-4.0-dev \
-            build-essential \
-            curl \
-            wget \
-            libssl-dev \
-            libgtk-3-dev \
-            libayatana-appindicator3-dev \
-            librsvg2-dev
-          npm install -g yarn
-    - run:
-        name: Compilar para Linux
-        command: |
-          cd src-tauri
-          yarn install
-          yarn tauri build --release --target x86_64-unknown-linux-gnu
-    - run:
-        name: Firmar binarios
-        command: |
-          cd src-tauri
-          npm install -g @tauri-apps/cli  # Instalar Tauri CLI globalmente
-          echo "$TAURI_PRIVATE_KEY" > private.key  # Crear archivo con la clave privada
-          tauri signer sign -k private.key target/x86_64-unknown-linux-gnu/release/bundle/app.AppImage  # Ajusta según el binario generado
-          cat target/x86_64-unknown-linux-gnu/release/bundle/app.AppImage.sig > signature.txt  # Guardar la firma
-    - store_artifacts:
-        path: src-tauri/target/x86_64-unknown-linux-gnu/release/bundle
-        destination: linux-binaries
-    - run:
-        name: Subir a GitHub Releases
-        command: |
-          curl -fsSL https://cli.github.com/packages/githubcli-archive-keyring.gpg | dd of=/usr/share/keyrings/githubcli-archive-keyring.gpg
-          echo "deb [arch=$(dpkg --print-architecture) signed-by=/usr/share/keyrings/githubcli-archive-keyring.gpg] https://cli.github.com/packages stable main" | tee /etc/apt/sources.list.d/github-cli.list > /dev/null
-          apt update && apt install gh -y
-          echo "$GITHUB_TOKEN" | gh auth login --with-token
-          VERSION="v$(date +%Y%m%d%H%M)"
-          SIGNATURE=$(cat src-tauri/target/x86_64-unknown-linux-gnu/release/bundle/app.AppImage.sig)
-          gh release create "$VERSION" src-tauri/target/x86_64-unknown-linux-gnu/release/bundle/**/* --title "Release $VERSION" --notes "Firma: $SIGNATURE"
-        environment:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          TAURI_PRIVATE_KEY: ${{ secrets.TAURI_PRIVATE_KEY }}
+version: 2.1
+
+orbs:
+  node: circleci/node@5.0.2
+
+jobs:
+  build-linux:
+    docker:
+      - image: cimg/rust:1.76
+    steps:
+      - checkout
+      - node/install:
+          node-version: "20"
+      - run:
+          name: Instalar dependencias de Tauri (Ubuntu 22.04)
+          command: |
+            apt-get update && apt-get install -y \
+              libwebkit2gtk-4.0-dev \
+              build-essential \
+              curl \
+              wget \
+              libssl-dev \
+              libgtk-3-dev \
+              libayatana-appindicator3-dev \
+              librsvg2-dev
+            npm install -g yarn
+      - run:
+          name: Compilar para Linux
+          command: |
+            cd src-tauri
+            yarn install
+            yarn tauri build --release --target x86_64-unknown-linux-gnu
+      - run:
+          name: Firmar binarios
+          command: |
+            cd src-tauri
+            npm install -g @tauri-apps/cli
+            echo "$TAURI_PRIVATE_KEY" > private.key
+            tauri signer sign -k private.key target/x86_64-unknown-linux-gnu/release/bundle/app.AppImage
+            cat target/x86_64-unknown-linux-gnu/release/bundle/app.AppImage.sig > linux_signature.txt
+      - store_artifacts:
+          path: src-tauri/target/x86_64-unknown-linux-gnu/release/bundle
+          destination: linux-binaries
+      - run:
+          name: Subir a GitHub Releases
+          command: |
+            curl -fsSL https://cli.github.com/packages/githubcli-archive-keyring.gpg | dd of=/usr/share/keyrings/githubcli-archive-keyring.gpg
+            echo "deb [arch=$(dpkg --print-architecture) signed-by=/usr/share/keyrings/githubcli-archive-keyring.gpg] https://cli.github.com/packages stable main" | tee /etc/apt/sources.list.d/github-cli.list > /dev/null
+            apt update && apt install gh -y
+            echo "$GITHUB_TOKEN" | gh auth login --with-token
+            VERSION="v$(date +%Y%m%d%H%M)"
+            gh release create "$VERSION" src-tauri/target/x86_64-unknown-linux-gnu/release/bundle/**/* --title "Release $VERSION" --notes "Automático desde CircleCI"
+          environment:
+            GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+            TAURI_PRIVATE_KEY: ${{ secrets.TAURI_PRIVATE_KEY }}
+
+  build-windows:
+    executor:
+      name: win/default
+    steps:
+      - checkout
+      - run:
+          name: Instalar Rust y Node.js
+          command: |
+            choco install rust -y
+            choco install nodejs --version=20.9.0 -y
+            npm install -g yarn
+      - run:
+          name: Compilar para Windows
+          command: |
+            cd src-tauri
+            yarn install
+            yarn tauri build --release --target x86_64-pc-windows-msvc
+      - run:
+          name: Firmar binarios
+          command: |
+            cd src-tauri
+            npm install -g @tauri-apps/cli
+            echo $env:TAURI_PRIVATE_KEY | Out-File -FilePath private.key
+            tauri signer sign -k private.key target/x86_64-pc-windows-msvc/release/bundle/app.exe
+            cat target/x86_64-pc-windows-msvc/release/bundle/app.exe.sig > windows_signature.txt
+      - store_artifacts:
+          path: src-tauri/target/x86_64-pc-windows-msvc/release/bundle
+          destination: windows-binaries
+      - run:
+          name: Subir a GitHub Releases
+          command: |
+            choco install gh -y
+            echo $env:GITHUB_TOKEN | gh auth login --with-token
+            $VERSION="v$(Get-Date -Format 'yyyyMMddHHmm')"
+            gh release create $VERSION src-tauri/target/x86_64-pc-windows-msvc/release/bundle/**/* --title "Release $VERSION" --notes "Automático desde CircleCI"
+          environment:
+            GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+            TAURI_PRIVATE_KEY: ${{ secrets.TAURI_PRIVATE_KEY }}
+
+  build-macos-x86:
+    macos:
+      xcode: "15.0.0"
+    steps:
+      - checkout
+      - node/install:
+          node-version: "20"
+      - run:
+          name: Instalar Rust
+          command: |
+            curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh -s -- -y
+            source $HOME/.cargo/env
+      - run:
+          name: Compilar para macOS x86_64
+          command: |
+            cd src-tauri
+            yarn install
+            yarn tauri build --release --target x86_64-apple-darwin
+      - run:
+          name: Firmar binarios
+          command: |
+            cd src-tauri
+            npm install -g @tauri-apps/cli
+            echo "$TAURI_PRIVATE_KEY" > private.key
+            tauri signer sign -k private.key target/x86_64-apple-darwin/release/bundle/app.dmg
+            cat target/x86_64-apple-darwin/release/bundle/app.dmg.sig > macos_x86_signature.txt
+      - store_artifacts:
+          path: src-tauri/target/x86_64-apple-darwin/release/bundle
+          destination: macos-x86-binaries
+      - run:
+          name: Subir a GitHub Releases
+          command: |
+            brew install gh
+            echo "$GITHUB_TOKEN" | gh auth login --with-token
+            VERSION="v$(date +%Y%m%d%H%M)"
+            gh release create "$VERSION" src-tauri/target/x86_64-apple-darwin/release/bundle/**/* --title "Release $VERSION" --notes "Automático desde CircleCI"
+          environment:
+            GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+            TAURI_PRIVATE_KEY: ${{ secrets.TAURI_PRIVATE_KEY }}
+
+  build-macos-arm:
+    macos:
+      xcode: "15.0.0"
+    resource_class: macos.x86.medium.gen2
+    steps:
+      - checkout
+      - node/install:
+          node-version: "20"
+      - run:
+          name: Instalar Rust
+          command: |
+            curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh -s -- -y
+            source $HOME/.cargo/env
+            rustup target add aarch64-apple-darwin
+      - run:
+          name: Compilar para macOS ARM
+          command: |
+            cd src-tauri
+            yarn install
+            yarn tauri build --release --target aarch64-apple-darwin
+      - run:
+          name: Firmar binarios
+          command: |
+            cd src-tauri
+            npm install -g @tauri-apps/cli
+            echo "$TAURI_PRIVATE_KEY" > private.key
+            tauri signer sign -k private.key target/aarch64-apple-darwin/release/bundle/app.dmg
+            cat target/aarch64-apple-darwin/release/bundle/app.dmg.sig > macos_arm_signature.txt
+      - store_artifacts:
+          path: src-tauri/target/aarch64-apple-darwin/release/bundle
+          destination: macos-arm-binaries
+      - run:
+          name: Subir a GitHub Releases
+          command: |
+            brew install gh
+            echo "$GITHUB_TOKEN" | gh auth login --with-token
+            VERSION="v$(date +%Y%m%d%H%M)"
+            gh release create "$VERSION" src-tauri/target/aarch64-apple-darwin/release/bundle/**/* --title "Release $VERSION" --notes "Automático desde CircleCI"
+          environment:
+            GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+            TAURI_PRIVATE_KEY: ${{ secrets.TAURI_PRIVATE_KEY }}
+
+workflows:
+  build-tauri:
+    jobs:
+      - build-linux:
+          filters:
+            branches:
+              only: release
+      - build-windows:
+          filters:
+            branches:
+              only: release
+      - build-macos-x86:
+          filters:
+            branches:
+              only: release
+      - build-macos-arm:
+          filters:
+            branches:
+              only: release
