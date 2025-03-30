@@ -1,23 +1,23 @@
 {
-  "version": "0.1.7",
+  "version": "0.1.10",
   "notes": "See the assets to download this version and install.",
-  "pub_date": "2025-03-30T10:14:21Z",
+  "pub_date": "2025-03-30T10:44:58Z",
   "platforms": {
     "darwin-aarch64": {
       "signature": "",
-      "url": "https://github.com/dominara-team/dominara/releases/download/v0.1.7/"
+      "url": "https://github.com/dominara-team/dominara/releases/download/v0.1.10/"
     },
     "darwin-x86_64": {
       "signature": "",
-      "url": "https://github.com/dominara-team/dominara/releases/download/v0.1.7/"
+      "url": "https://github.com/dominara-team/dominara/releases/download/v0.1.10/"
     },
     "linux-x86_64": {
-      "signature": "dW50cnVzdGVkIGNvbW1lbnQ6IHNpZ25hdHVyZSBmcm9tIHRhdXJpIHNlY3JldCBrZXkKUlVRVUlLVjNKNWxRWnp1L01Vd24rSWd4UnRObEpJMG0xeDl0RlVSekVMc1QwN2JZNVVIVk4vdUk3U3ZQMGdzTmh3U0RFYmlmSXBMWmY5U3ZSZ0NYVGQwVGk3cUtmUGhVaWdFPQp0cnVzdGVkIGNvbW1lbnQ6IHRpbWVzdGFtcDoxNzQzMzI5NTE5CWZpbGU6ZG9taW5hcmFfMC4xLjdfYW1kNjQuQXBwSW1hZ2UKSXN0Y3EyRnpsSWlwbE15Wk1kcXhyajJCN21zZjlKRjhkeW52bFdjUFVhcTNPMC9mSkI3Wjh1bXk5N3ZkODQ2M1FlRUNSVmdDanpLUDJiYThDOWpJQ1E9PQo=",
-      "url": "https://github.com/dominara-team/dominara/releases/download/v0.1.7/dominara_0.1.7_amd64.AppImage"
+      "signature": "dW50cnVzdGVkIGNvbW1lbnQ6IHNpZ25hdHVyZSBmcm9tIHRhdXJpIHNlY3JldCBrZXkKUlVRVUlLVjNKNWxRWjdTU2ZFbU9sUXpEY2I2aW1FUW9GV3VvSm5Wa0xWVkt3cndvalI4K3VCRnh6dXlqZnZLaGlXU0htMlZXMXlER1R2QVoxS0dwZTVkWTRVMkc5Y2luMVFBPQp0cnVzdGVkIGNvbW1lbnQ6IHRpbWVzdGFtcDoxNzQzMzMxNDQyCWZpbGU6ZG9taW5hcmFfMC4xLjEwX2FtZDY0LkFwcEltYWdlCnZ4M21XSGtxaVNpK1doZGY0bGdHVW56OE9EVG9RaU9qUWJaOFNKT0t0MGNma3RrRFdkamNraXNzaDU4L2NxaGVIWkNvR0h3YVNsRVZaMHVJKzNiVUFRPT0K",
+      "url": "https://github.com/dominara-team/dominara/releases/download/v0.1.10/dominara_0.1.10_amd64.AppImage"
     },
     "windows-x86_64": {
-      "signature": "dW50cnVzdGVkIGNvbW1lbnQ6IHNpZ25hdHVyZSBmcm9tIHRhdXJpIHNlY3JldCBrZXkKUlVRVUlLVjNKNWxRWndMSy8rY2JjUUFoUGEzeE9wbi9iMGtvSkhyVkw1MDJabGFuSy9zbUdIb2pSYVluRmpVUWFhb1ZQS1MxY09lcC93SHk0OXhJbGFVWWEyVEVUcDB0YmdNPQp0cnVzdGVkIGNvbW1lbnQ6IHRpbWVzdGFtcDoxNzQzMzI5NjM3CWZpbGU6ZG9taW5hcmFfMC4xLjdfeDY0LXNldHVwLmV4ZQpyanZoVnYyUGUyUWE1WHdjT0k1MW9Cd09YWDhLbE4wbTNvUGFFcHhBSTZWemNUYVV1TUVrWEhqaXMxQ2lJQzI4MUd3VEF6VEdYbkIrcjAxd0xOeDZBQT09Cg==",
-      "url": "https://github.com/dominara-team/dominara/releases/download/v0.1.7/dominara_0.1.7_x64-setup.exe"
+      "signature": "dW50cnVzdGVkIGNvbW1lbnQ6IHNpZ25hdHVyZSBmcm9tIHRhdXJpIHNlY3JldCBrZXkKUlVRVUlLVjNKNWxRWjczODA2bHVJRy9GclQzaDRzalROVFZ4bCtkeWMySGhCb3lpTWg5ZjhJVjlaNEV5WVAzNTk0MVQ3VmVmM3VncWM0eEJOa2M1TWtQUWJXOU1LbVd4bGcwPQp0cnVzdGVkIGNvbW1lbnQ6IHRpbWVzdGFtcDoxNzQzMzMxNDgwCWZpbGU6ZG9taW5hcmFfMC4xLjEwX3g2NC1zZXR1cC5leGUKY2hreXBhNFpQVmZXZFBiNUt1aWFQVmt2bDIrVVM1ZldvNXRSUjU0SU52QVMzY1AwM01LMFk5MWlOZnVDSGM3amV6RVNmVlVSOVV0Tm1ubHcvY3RJQlE9PQo=",
+      "url": "https://github.com/dominara-team/dominara/releases/download/v0.1.10/dominara_0.1.10_x64-setup.exe"
     }
   }
 }
