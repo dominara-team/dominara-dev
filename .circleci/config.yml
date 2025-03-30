@@ -7,7 +7,7 @@ orbs:
 jobs:
   build-linux:
     docker:
-      - image: cimg/rust:1.81.0 # Usamos una versión específica en lugar de 'stable'
+      - image: cimg/rust:1.81.0
     steps:
       - checkout
       - node/install:
@@ -23,7 +23,8 @@ jobs:
               libssl-dev \
               libgtk-3-dev \
               libayatana-appindicator3-dev \
-              librsvg2-dev
+              librsvg2-dev \
+              libglib2.0-dev  # Añadimos esta dependencia
             npm install -g yarn
       - run:
           name: Compilar para Linux
@@ -62,7 +63,7 @@ jobs:
       - run:
           name: Instalar Rust y Node.js
           command: |
-            choco install rust --version 1.81.0 -y  # Especificamos Rust 1.81.0
+            choco install rust --version 1.81.0 -y
             choco install nodejs --version=20.9.0 -y
             npm install -g yarn
       - run:
@@ -105,7 +106,7 @@ jobs:
           command: |
             curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh -s -- -y
             source $HOME/.cargo/env
-            rustup update 1.81.0  # Especificamos Rust 1.81.0
+            rustup update 1.81.0
       - run:
           name: Compilar para macOS x86_64
           command: |
@@ -147,7 +148,7 @@ jobs:
           command: |
             curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh -s -- -y
             source $HOME/.cargo/env
-            rustup update 1.81.0  # Especificamos Rust 1.81.0
+            rustup update 1.81.0
             rustup target add aarch64-apple-darwin
       - run:
           name: Compilar para macOS ARM
