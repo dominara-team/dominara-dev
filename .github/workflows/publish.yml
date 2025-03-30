@@ -162,7 +162,9 @@ jobs:
             release-files/*
           repository: dominara-team/dominara
           token: ${{ secrets.RELEASE_REPOSITORY_TOKEN }}
-      # Opcional: Actualizar latest.json en dominara-dev si lo necesitas
+      - name: Preserve latest.json
+        if: success()
+        run: cp release-files/latest.json /tmp/latest.json
       - name: Update latest.json in main repo
         if: success()
         uses: actions/checkout@v4
@@ -171,7 +173,7 @@ jobs:
           ref: main
           token: ${{ secrets.GITHUB_TOKEN }}
       - name: Copy latest.json to main repo
-        run: cp release-files/latest.json .
+        run: cp /tmp/latest.json .
       - name: Commit and push latest.json
         run: |
           git config --global user.email "github-actions@github.com"
