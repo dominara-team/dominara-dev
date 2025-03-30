@@ -63,6 +63,12 @@ jobs:
         run: |
           sudo apt-get update
           sudo apt-get install -y libwebkit2gtk-4.0-dev libwebkit2gtk-4.1-dev libappindicator3-dev librsvg2-dev patchelf
+      - name: Setup macOS dependencies
+        if: matrix.platform == 'macos-latest'
+        run: |
+          brew install dmgbuild || echo "dmgbuild already installed or not needed"
+          sudo xcode-select --install || echo "Xcode tools already installed or not needed"
+          sudo xcodebuild -license accept || echo "Xcode license already accepted"
       - name: Install frontend dependencies
         run: npm install
       - name: Build Tauri app
@@ -75,9 +81,10 @@ jobs:
       - name: Debug artifacts (macOS only)
         if: matrix.platform == 'macos-latest'
         run: |
-          echo "Listing generated artifacts for ${{ matrix.target }}:"
-          ls -lh src-tauri/target/release/bundle/macos/ || echo "No .app.tar.gz found"
-          ls -lh src-tauri/target/release/bundle/dmg/ || echo "No .dmg found"
+          echo "Listing all files in src-tauri/target/release/bundle:"
+          find src-tauri/target/release/bundle -type f -ls || echo "No files found in bundle directory"
+          echo "Listing all files in src-tauri/target/release:"
+          find src-tauri/target/release -type f -ls || echo "No files found in release directory"
       - name: Upload artifacts
         uses: actions/upload-artifact@v4
         with:
