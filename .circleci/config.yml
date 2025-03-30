@@ -7,7 +7,7 @@ orbs:
 jobs:
   build-linux:
     docker:
-      - image: cimg/rust:1.79 # Actualizamos a una versión más reciente
+      - image: cimg/rust:stable # Cambiamos a la última versión estable
     steps:
       - checkout
       - node/install:
@@ -62,7 +62,7 @@ jobs:
       - run:
           name: Instalar Rust y Node.js
           command: |
-            choco install rust -y
+            choco install rust -y  # Esto instala la última versión estable
             choco install nodejs --version=20.9.0 -y
             npm install -g yarn
       - run:
@@ -105,6 +105,7 @@ jobs:
           command: |
             curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh -s -- -y
             source $HOME/.cargo/env
+            rustup update stable  # Aseguramos la última versión estable
       - run:
           name: Compilar para macOS x86_64
           command: |
@@ -146,6 +147,7 @@ jobs:
           command: |
             curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh -s -- -y
             source $HOME/.cargo/env
+            rustup update stable  # Aseguramos la última versión estable
             rustup target add aarch64-apple-darwin
       - run:
           name: Compilar para macOS ARM
