@@ -86,23 +86,26 @@ jobs:
         with:
           args: ${{ matrix.target != '' && format('--target {0}', matrix.target) || '' }}
           includeUpdaterJson: true
-      - name: Debug artifacts (macOS only)
+      - name: Debug build output
         if: matrix.platform == 'macos-latest'
         run: |
-          echo "Listing all files in src-tauri/target/release/bundle:"
-          find src-tauri/target/release/bundle -type f -ls || echo "No files found in bundle directory"
-          echo "Listing all files in src-tauri/target/release:"
-          find src-tauri/target/release -type f -ls || echo "No files found in release directory"
-          echo "Listing specific directories:"
-          echo "DMG directory:"
-          ls -la src-tauri/target/release/bundle/dmg/ || echo "No DMG files found"
-          echo "macOS directory:"
-          ls -la src-tauri/target/release/bundle/macos/ || echo "No macOS files found"
+          echo "Current directory:"
+          pwd
+          echo "Directory structure:"
+          ls -R src-tauri/target/release/
+          echo "Bundle directory structure:"
+          ls -R src-tauri/target/release/bundle/
+          echo "Looking for specific files:"
+          find src-tauri/target/release -type f -name "*.dmg" -o -name "*.app" -o -name "*.tar.gz" -o -name "*.sig" || echo "No matching files found"
       - name: Upload artifacts
         uses: actions/upload-artifact@v4
         with:
           name: tauri-artifacts-${{ matrix.platform }}-${{ matrix.target || 'default' }}
-          path: ${{ matrix.artifact_pattern }}
+          path: |
+            src-tauri/target/release/bundle/**/*.dmg
+            src-tauri/target/release/bundle/**/*.app
+            src-tauri/target/release/bundle/**/*.tar.gz
+            src-tauri/target/release/bundle/**/*.tar.gz.sig
 
   release:
     needs: build
