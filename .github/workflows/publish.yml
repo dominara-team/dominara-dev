@@ -152,3 +152,17 @@ jobs:
           files: release-files/*
           repository: dominara-team/dominara
           token: ${{ secrets.RELEASE_REPOSITORY_TOKEN }}
+      - name: Update latest.json in main repo
+        uses: actions/checkout@v4
+        with:
+          repository: dominara-team/dominara-dev
+          ref: main
+          token: ${{ secrets.RELEASE_REPOSITORY_TOKEN }}
+      - name: Commit and push latest.json
+        run: |
+          cp latest.json latest.json.new
+          git config --global user.email "github-actions@github.com"
+          git config --global user.name "GitHub Actions"
+          git add latest.json.new
+          git commit -m "chore: update latest.json to v${{ env.VERSION }}"
+          git push origin main
