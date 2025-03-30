@@ -70,8 +70,13 @@ jobs:
           sudo xcodebuild -license accept || echo "Xcode license already accepted"
       - name: Install frontend dependencies
         run: npm install
-      - name: Clean build directory
+      - name: Clean build directory (Unix)
+        if: matrix.platform != 'windows-latest'
         run: rm -rf src-tauri/target/release
+      - name: Clean build directory (Windows)
+        if: matrix.platform == 'windows-latest'
+        shell: cmd
+        run: if exist src-tauri\target\release rmdir /s /q src-tauri\target\release
       - name: Build Tauri app
         uses: tauri-apps/tauri-action@v0
         env:
