@@ -20,16 +20,18 @@ jobs:
           - platform: "macos-latest"
             target: "aarch64-apple-darwin"
             artifact_pattern: |
+              src-tauri/target/release/bundle/dmg/*.dmg
+              src-tauri/target/release/bundle/macos/*.app
               src-tauri/target/release/bundle/macos/*.app.tar.gz
               src-tauri/target/release/bundle/macos/*.app.tar.gz.sig
-              src-tauri/target/release/bundle/dmg/*.dmg
             platform_key: "darwin-aarch64"
           - platform: "macos-latest"
             target: "x86_64-apple-darwin"
             artifact_pattern: |
+              src-tauri/target/release/bundle/dmg/*.dmg
+              src-tauri/target/release/bundle/macos/*.app
               src-tauri/target/release/bundle/macos/*.app.tar.gz
               src-tauri/target/release/bundle/macos/*.app.tar.gz.sig
-              src-tauri/target/release/bundle/dmg/*.dmg
             platform_key: "darwin-x86_64"
           - platform: "ubuntu-22.04"
             target: ""
@@ -84,6 +86,13 @@ jobs:
         with:
           args: ${{ matrix.target != '' && format('--target {0}', matrix.target) || '' }}
           includeUpdaterJson: true
+      - name: Verify build output
+        if: matrix.platform == 'macos-latest'
+        run: |
+          echo "Checking build output structure:"
+          ls -R src-tauri/target/release/bundle/
+          echo "Checking for specific files:"
+          find src-tauri/target/release/bundle -type f -name "*.app" -o -name "*.dmg" -o -name "*.tar.gz" -o -name "*.sig" || echo "No matching files found"
       - name: Debug artifacts (macOS only)
         if: matrix.platform == 'macos-latest'
         run: |
@@ -91,6 +100,11 @@ jobs:
           find src-tauri/target/release/bundle -type f -ls || echo "No files found in bundle directory"
           echo "Listing all files in src-tauri/target/release:"
           find src-tauri/target/release -type f -ls || echo "No files found in release directory"
+          echo "Listing specific directories:"
+          echo "DMG directory:"
+          ls -la src-tauri/target/release/bundle/dmg/ || echo "No DMG files found"
+          echo "macOS directory:"
+          ls -la src-tauri/target/release/bundle/macos/ || echo "No macOS files found"
       - name: Upload artifacts
         uses: actions/upload-artifact@v4
         with:
