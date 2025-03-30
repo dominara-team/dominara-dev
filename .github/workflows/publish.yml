@@ -141,6 +141,11 @@ jobs:
             }
           }
           EOF
+      - name: Upload latest.json as artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: latest-json
+          path: latest.json
       - name: Create release in public repo
         uses: softprops/action-gh-release@v1
         with:
@@ -158,9 +163,11 @@ jobs:
           repository: dominara-team/dominara-dev
           ref: main
           token: ${{ secrets.RELEASE_REPOSITORY_TOKEN }}
-      - name: Copy latest.json to main repo
-        run: |
-          cp ../latest.json latest.json
+      - name: Download latest.json artifact
+        uses: actions/download-artifact@v4
+        with:
+          name: latest-json
+          path: .
       - name: Commit and push latest.json
         run: |
           git config --global user.email "github-actions@github.com"
